@@ -1,6 +1,7 @@
 package br.com.zup.edu.edubank.compartilhado;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -17,7 +18,12 @@ public class DeafultExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> methodArgumentNotValid(MethodArgumentNotValidException ex) {
-        List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
+        BindingResult bindingResult = ex.getBindingResult();
+
+        List<FieldError> fieldErrors = bindingResult
+                .getFieldErrors();
+
+
 
         List<String> response = fieldErrors.stream().map(
                         erro -> format("O Campo %s %s", erro.getField(), erro.getDefaultMessage())

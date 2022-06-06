@@ -2,6 +2,7 @@ package br.com.zup.edu.edubank.conta;
 
 import br.com.zup.edu.edubank.util.BaseIntegrationTest;
 import br.com.zup.edu.edubank.util.JsonUtilsTest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,11 @@ class CadastrarContaControllerTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() {
+        contaRepository.deleteAll();
+    }
+
+    @AfterEach
+    void tearDown() {
         contaRepository.deleteAll();
     }
 
@@ -74,6 +80,7 @@ class CadastrarContaControllerTest extends BaseIntegrationTest {
         String emailJaCadastrado = "rafael.ponte@zup.com.br";
 
         Conta rafaelPonte = new Conta("0002", "000023", "682.085.520-62", emailJaCadastrado, "Rafael Ponte");
+
         contaRepository.save(rafaelPonte);
 
         ContaRequest contaRequest = new ContaRequest(

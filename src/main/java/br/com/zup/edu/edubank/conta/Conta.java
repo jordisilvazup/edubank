@@ -30,9 +30,11 @@ public class Conta {
     @Column(nullable = false)
     private String nome;
 
-
     @Column(nullable = false)
     private BigDecimal saldo = BigDecimal.ZERO;
+
+    @Version
+    private Long versao;
 
     public Conta(String agencia, String numeroDaConta, String cpf, String email, String nome) {
         this.agencia = agencia;
@@ -48,5 +50,20 @@ public class Conta {
 
     public Long getId() {
         return id;
+    }
+
+    public void sacar(BigDecimal valor) {
+        if (this.saldo.compareTo(valor) < 0) {
+            throw new SaldoInsuficienteException("não é possivel sacar um valor maior do que o saldo atual da conta.");
+        }
+        this.saldo = saldo.subtract(valor);
+    }
+
+    public void depositar(BigDecimal valor) {
+        this.saldo = saldo.add(valor);
+    }
+
+    public BigDecimal getSaldo() {
+        return saldo;
     }
 }
