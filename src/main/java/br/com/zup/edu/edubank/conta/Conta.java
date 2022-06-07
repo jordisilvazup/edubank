@@ -60,6 +60,9 @@ public class Conta {
     }
 
     public void depositar(BigDecimal valor) {
+        if (valor.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new ValorParaDepositoInvalidoException("Não é permitido deposito de valores abaixo de zero");
+        }
         this.saldo = saldo.add(valor);
     }
 

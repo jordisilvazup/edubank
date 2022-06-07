@@ -2,24 +2,32 @@ package br.com.zup.edu.edubank.conta;
 
 import br.com.zup.edu.edubank.util.BaseIntegrationTest;
 import br.com.zup.edu.edubank.util.JsonUtilsTest;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.web.server.ResponseStatusException;
 
+import javax.persistence.EntityManager;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -33,8 +41,14 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
     @Autowired
     private TransferenciaRepository transferenciaRepository;
 
-    @Autowired
+    @SpyBean
     private ContaRepository contaRepository;
+
+    @Autowired
+    private EntityManager manager;
+
+    @Autowired
+    private TransactionTemplate template;
 
     private Conta contaUm;
     private Conta contaDois;
@@ -64,7 +78,7 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
         String payload = jsonUtils.toJson(transferenciaRequest);
 
         MockHttpServletRequestBuilder request = post("/transferencias")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(payload);
 
         String location = mockMvc.perform(request)
@@ -109,15 +123,13 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
     @DisplayName("nao deve realizar uma transferencia com dados nulos")
     void test1() throws Exception {
 
-        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(
-                null, null, null
-        );
+        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(null, null, null);
 
         String payloadRequest = jsonUtils.toJson(transferenciaRequest);
 
         MockHttpServletRequestBuilder request = post("/transferencias")
                 .header("Accept-Language", "pt-br")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(payloadRequest);
 
         String payloadResponse = mockMvc.perform(request)
@@ -126,12 +138,12 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
                 )
                 .andReturn()
                 .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+                .getContentAsString(UTF_8);
 
         List<String> response = jsonUtils.toListObject(String.class, payloadResponse);
 
-        assertThat(response)
-                .hasSize(3)
+        assertThat(response).
+                hasSize(3)
                 .contains(
                         "O Campo valor não deve ser nulo",
                         "O Campo idDestino não deve ser nulo",
@@ -144,15 +156,13 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
     @DisplayName("nao deve realizar uma transferencia com dados invalidos")
     void test2() throws Exception {
 
-        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(
-                -1L, -1L, BigDecimal.ZERO
-        );
+        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(-1L, -1L, BigDecimal.ZERO);
 
         String payloadRequest = jsonUtils.toJson(transferenciaRequest);
 
         MockHttpServletRequestBuilder request = post("/transferencias")
                 .header("Accept-Language", "pt-br")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(payloadRequest);
 
         String payloadResponse = mockMvc.perform(request)
@@ -161,7 +171,7 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
                 )
                 .andReturn()
                 .getResponse()
-                .getContentAsString(StandardCharsets.UTF_8);
+                .getContentAsString(UTF_8);
 
         List<String> response = jsonUtils.toListObject(String.class, payloadResponse);
 
@@ -179,15 +189,13 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
     @Test
     @DisplayName("nao deve realizar a transferencia quando a conta de Origem não existe")
     void test3() throws Exception {
-        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(
-                Long.MAX_VALUE, contaDois.getId(), BigDecimal.ONE
-        );
+        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(Long.MAX_VALUE, contaDois.getId(), BigDecimal.ONE);
 
         String payloadRequest = jsonUtils.toJson(transferenciaRequest);
 
         MockHttpServletRequestBuilder request = post("/transferencias")
                 .header("Accept-Language", "pt-br")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(payloadRequest);
 
         Exception resolvedException = mockMvc.perform(request)
@@ -206,15 +214,13 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
     @Test
     @DisplayName("nao deve realizar a transferencia quando a conta de Destino não existe")
     void test4() throws Exception {
-        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(
-                contaUm.getId(), Long.MAX_VALUE, BigDecimal.ONE
-        );
+        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(contaUm.getId(), Long.MAX_VALUE, BigDecimal.ONE);
 
         String payloadRequest = jsonUtils.toJson(transferenciaRequest);
 
         MockHttpServletRequestBuilder request = post("/transferencias")
                 .header("Accept-Language", "pt-br")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(payloadRequest);
 
         Exception resolvedException = mockMvc.perform(request)
@@ -234,15 +240,13 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
     @Test
     @DisplayName("nao deve realizar a transferencia caso a conta de origem nao tenha saldo suficiente")
     void test5() throws Exception {
-        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(
-                contaDois.getId(), contaUm.getId(), BigDecimal.ONE
-        );
+        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(contaDois.getId(), contaUm.getId(), BigDecimal.ONE);
 
         String payloadRequest = jsonUtils.toJson(transferenciaRequest);
 
         MockHttpServletRequestBuilder request = post("/transferencias")
                 .header("Accept-Language", "pt-br")
-                .contentType(MediaType.APPLICATION_JSON)
+                .contentType(APPLICATION_JSON)
                 .content(payloadRequest);
 
         Exception resolvedException = mockMvc.perform(request)
@@ -259,4 +263,58 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
     }
 
     //testes para concorrencia
+
+
+    @Test
+    @DisplayName("nao deve realizar uma transferencia caso a conta tenha sido atualizada antes")
+    void test6() throws Exception {
+
+
+        doAnswer(invocation -> {
+
+            Optional<Conta> possivelConta = Optional.ofNullable(
+                    manager.find(Conta.class, contaDois.getId())
+            );
+
+            doSync(() -> {
+                template.executeWithoutResult((status) -> {
+                    Conta conta = manager.find(Conta.class, contaDois.getId());
+                    conta.depositar(BigDecimal.ONE);
+                });
+            });
+
+            return possivelConta;
+        }).when(contaRepository).findById(contaDois.getId());
+
+        TransferenciaRequest transferenciaRequest = new TransferenciaRequest(
+                contaUm.getId(), contaDois.getId(), BigDecimal.ONE
+        );
+        String payloadRequest = jsonUtils.toJson(transferenciaRequest);
+
+        MockHttpServletRequestBuilder request = post("/transferencias")
+                .header("Accept-Language", "pt-br").
+                contentType(APPLICATION_JSON).
+                content(payloadRequest);
+
+
+        String payloadResponse = mockMvc.perform(request)
+                .andExpect(
+                        status().isConflict()
+                )
+                .andReturn()
+                .getResponse()
+                .getContentAsString(UTF_8);
+
+        Map response = jsonUtils.toObject(Map.class, payloadResponse);
+        assertNotNull(response);
+        String mensagem = (String) response.get("mensagem");
+        assertEquals("Infelizmente ocorreu um erro, tente novamente.", mensagem);
+
+
+    }
+
+    void doSync(Runnable action) throws ExecutionException, InterruptedException, TimeoutException {
+        Executors.newSingleThreadExecutor().submit(action).get(2, TimeUnit.SECONDS);
+    }
+
 }

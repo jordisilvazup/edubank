@@ -1,17 +1,21 @@
 package br.com.zup.edu.edubank.compartilhado;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import static java.lang.String.*;
 import static org.springframework.http.ResponseEntity.badRequest;
+import static org.springframework.http.ResponseEntity.status;
 
 @RestControllerAdvice
 public class DeafultExceptionHandler {
@@ -31,5 +35,17 @@ public class DeafultExceptionHandler {
                 .collect(Collectors.toList());
 
         return badRequest().body(response);
+    }
+
+
+    @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+    public ResponseEntity<?> optmisticLock(ObjectOptimisticLockingFailureException ex) {
+
+        String msg = "Infelizmente ocorreu um erro, tente novamente.";
+
+        return status(409)
+                .body(
+                        Map.of("mensagem",msg)
+                );
     }
 }
