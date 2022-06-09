@@ -18,6 +18,7 @@ public class TransferenciaResponse {
         this.realizadoEm=transferencia.getCriadoEm();
     }
 
+    @Deprecated
     public TransferenciaResponse() {
     }
 

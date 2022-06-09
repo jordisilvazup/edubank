@@ -11,7 +11,6 @@ import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilde
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -148,7 +147,5 @@ class ListarTransferenciasControllerTest extends BaseIntegrationTest {
         assertNotNull(resolvedException);
         assertEquals(ResponseStatusException.class, resolvedException.getClass());
         assertEquals("Conta não cadastrada no sistema.", ((ResponseStatusException )resolvedException).getReason());
-
-
     }
 }

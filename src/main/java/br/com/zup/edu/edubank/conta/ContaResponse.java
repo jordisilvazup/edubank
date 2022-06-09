@@ -11,6 +11,7 @@ public class ContaResponse {
         this.titular=conta.getNome();
     }
 
+    @Deprecated
     public ContaResponse() {
     }
 
