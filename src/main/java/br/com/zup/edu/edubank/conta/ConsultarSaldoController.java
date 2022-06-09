@@ -27,6 +27,5 @@ public class ConsultarSaldoController {
                 .orElseThrow(() -> new ResponseStatusException(NOT_FOUND, "Conta não cadastrada no sistema."));
 
         return ResponseEntity.ok(new ConsultarSaldoResponse(conta));
-
     }
 }
