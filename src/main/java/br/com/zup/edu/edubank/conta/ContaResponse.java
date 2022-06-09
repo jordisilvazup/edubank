@@ -25,4 +25,13 @@ public class ContaResponse {
     public String getTitular() {
         return titular;
     }
+
+    @Override
+    public String toString() {
+        return "ContaResponse{" +
+                "agencia='" + agencia + '\'' +
+                ", numeroConta='" + numeroConta + '\'' +
+                ", titular='" + titular + '\'' +
+                '}';
+    }
 }

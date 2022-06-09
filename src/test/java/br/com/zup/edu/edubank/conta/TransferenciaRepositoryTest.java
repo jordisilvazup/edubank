@@ -26,6 +26,7 @@ class TransferenciaRepositoryTest {
     private Conta contaDois;
     private Conta contaTres;
 
+
     @BeforeEach
     void setUp() {
         transferenciaRepository.deleteAll();
@@ -41,7 +42,7 @@ class TransferenciaRepositoryTest {
     }
 
     @Test
-    @DisplayName("deve retornar todas transferencias de uma conta")
+    @DisplayName("deve retornar todas transferencias enviadas e recebidas de uma conta")
     void name() {
 
         Transferencia contaUmParaDois15 = new Transferencia(contaUm, contaDois, new BigDecimal("15").setScale(2));
@@ -77,6 +78,78 @@ class TransferenciaRepositoryTest {
                         new Tuple(contaUmParaDois10.getId(), contaUmParaDois10.getValor()),
                         new Tuple(contaUmParaDois15.getId(), contaUmParaDois15.getValor()),
                         new Tuple(contaTresParaUm10.getId(), contaTresParaUm10.getValor())
+                );
+    }    
+    
+    
+    @Test
+    @DisplayName("deve retornar todas transferencias enviadas conta")
+    void test() {
+
+        Transferencia contaUmParaDois15 = new Transferencia(contaUm, contaDois, new BigDecimal("15").setScale(2));
+        Transferencia contaUmParaTres10 = new Transferencia(contaUm, contaTres, new BigDecimal("10").setScale(2));
+        Transferencia contaTresParaDois10 = new Transferencia(contaTres, contaDois, new BigDecimal("10").setScale(2));
+        Transferencia contaDoisParaTres5 = new Transferencia(contaDois, contaTres, new BigDecimal("5").setScale(2));
+
+        List<Transferencia> transferencias = List.of(
+                contaUmParaDois15,
+                contaUmParaTres10,
+                contaTresParaDois10,
+                contaDoisParaTres5
+        );
+
+        transferenciaRepository.saveAll(transferencias);
+
+        Page<Transferencia> response = transferenciaRepository
+                .findAllTransferenciaByOrigemIdOrDestinoId(contaUm.getId(), Pageable.unpaged());
+
+        assertThat(response.getTotalElements())
+                .isEqualTo(2);
+
+        assertThat(response.getTotalPages())
+                .isEqualTo(1);
+
+
+        assertThat(response.get())
+                .hasSize(2)
+                .extracting(Transferencia::getId, Transferencia::getValor)
+                .contains(
+                        new Tuple(contaUmParaDois15.getId(), contaUmParaDois15.getValor()),
+                        new Tuple(contaUmParaTres10.getId(), contaUmParaTres10.getValor())
+                );
+    }
+
+    @Test
+    @DisplayName("deve retornar todas transferencias recebidas conta")
+    void test1() {
+
+        Transferencia contaUmParaDois15 = new Transferencia(contaUm, contaDois, new BigDecimal("15").setScale(2));
+        Transferencia contaUmParaTres10 = new Transferencia(contaUm, contaTres, new BigDecimal("10").setScale(2));
+        Transferencia contaTresParaDois10 = new Transferencia(contaTres, contaDois, new BigDecimal("10").setScale(2));
+
+        List<Transferencia> transferencias = List.of(
+                contaUmParaDois15,
+                contaUmParaTres10,
+                contaTresParaDois10
+        );
+
+        transferenciaRepository.saveAll(transferencias);
+
+        Page<Transferencia> response = transferenciaRepository
+                .findAllTransferenciaByOrigemIdOrDestinoId(contaDois.getId(), Pageable.unpaged());
+
+        assertThat(response.getTotalElements())
+                .isEqualTo(2);
+
+        assertThat(response.getTotalPages())
+                .isEqualTo(1);
+
+        assertThat(response.get())
+                .hasSize(2)
+                .extracting(Transferencia::getId, Transferencia::getValor)
+                .contains(
+                        new Tuple(contaUmParaDois15.getId(), contaUmParaDois15.getValor()),
+                        new Tuple(contaTresParaDois10.getId(), contaTresParaDois10.getValor())
                 );
     }
 }

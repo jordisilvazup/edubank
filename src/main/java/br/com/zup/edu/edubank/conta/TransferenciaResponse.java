@@ -1,7 +1,5 @@
 package br.com.zup.edu.edubank.conta;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -10,7 +8,6 @@ public class TransferenciaResponse {
     private ContaResponse origem;
     private ContaResponse destino;
     private BigDecimal valor;
-    @JsonFormat(pattern = "dd/MM/yyyy hh:mm:ss")
     private LocalDateTime realizadoEm;
 
     public TransferenciaResponse(Transferencia transferencia) {
@@ -43,4 +40,17 @@ public class TransferenciaResponse {
     public LocalDateTime getRealizadoEm() {
         return realizadoEm;
     }
+
+    @Override
+    public String toString() {
+        return "TransferenciaResponse{" +
+                "id=" + id +
+                ", origem=" + origem +
+                ", destino=" + destino +
+                ", valor=" + valor +
+                ", realizadoEm=" + realizadoEm +
+                '}';
+    }
+
+
 }

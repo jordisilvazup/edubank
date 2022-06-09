@@ -28,9 +28,12 @@ class CadastrarContaControllerTest extends BaseIntegrationTest {
     private MockMvc mockMvc;
     @Autowired
     private ContaRepository contaRepository;
+    @Autowired
+    private TransferenciaRepository transferenciaRepository;
 
     @BeforeEach
     void setUp() {
+        transferenciaRepository.deleteAll();
         contaRepository.deleteAll();
     }
 

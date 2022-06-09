@@ -8,5 +8,6 @@ import org.springframework.data.repository.query.Param;
 
 public interface TransferenciaRepository extends JpaRepository<Transferencia, Long> {
     @Query("select t from Transferencia t where (t.origem.id =:id or t.destino.id=:id) ")
-    Page<Transferencia> findAllTransferenciaByOrigemIdOrDestinoId(@Param("id") Long id, Pageable pagincao);
+    Page<Transferencia> findAllTransferenciaByOrigemIdOrDestinoId(@Param("id") Long id, Pageable paginacao);
+
 }

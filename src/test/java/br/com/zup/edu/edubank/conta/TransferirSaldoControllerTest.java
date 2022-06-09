@@ -271,7 +271,6 @@ class TransferirSaldoControllerTest extends BaseIntegrationTest {
 
 
         doAnswer(invocation -> {
-
             Optional<Conta> possivelConta = Optional.ofNullable(
                     manager.find(Conta.class, contaDois.getId())
             );
