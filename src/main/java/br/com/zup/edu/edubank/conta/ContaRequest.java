@@ -20,6 +20,7 @@ public class ContaRequest {
     private String cpf;
 
     @NotBlank
+    @Length(max=160)
     private String nome;
 
     @Length(min = 6, max = 6, message = "deve conter 6 digitos")
